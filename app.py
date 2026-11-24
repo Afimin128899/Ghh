@@ -2595,8 +2595,10 @@ async def main():
     dp.include_router(router)
     watchdog = asyncio.create_task(watchdog_task(bot))
 
-    logger.info("Session Shop bot успешно запущен")
     try:
+        logger.info("Запуск: проверка Bot API с ожиданием retry_after (startup-v2)")
+        await bot.get_me()
+        logger.info("Проверка Bot API пройдена, запускается polling")
         await dp.start_polling(bot, close_bot_session=False)
     finally:
         watchdog.cancel()
