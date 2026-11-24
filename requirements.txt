@@ -1,0 +1,8 @@
+aiogram>=3.25,<4
+fastapi>=0.115,<1
+pydantic>=2.9,<3
+pydantic-settings>=2.5,<3
+PySocks>=1.7,<2
+python-dotenv>=1.0,<2
+Telethon>=1.36,<2
+uvicorn>=0.30,<1

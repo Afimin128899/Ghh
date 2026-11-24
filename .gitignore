@@ -1,0 +1,32 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+proxies.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime data (contains sensitive Telegram credentials)
+*.session
+*.session-journal
+*.db
+*.db-shm
+*.db-wal
+quarantine/
+uploads/
+*.zip
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

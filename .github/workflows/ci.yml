@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --requirement requirements.txt
+
+      - name: Compile sources
+        run: python -m compileall -q app.py main.py session_shop tests
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Import bot application
+        env:
+          API_ID: "123456"
+          API_HASH: "0123456789abcdef0123456789abcdef"
+          BOT_TOKEN: "123456:abcdefghijklmnopqrstuvwxyz"
+          ADMIN_IDS: "123456789"
+          DB_FILE: /tmp/session-shop-ci.db
+          ENABLE_UGS_REFERRAL: "false"
+          ENABLE_RC_REFERRAL: "false"
+        run: |
+          python - <<'PY'
+          import app
+
+          keyboard = app.main_menu_kb(123456789)
+          mode_button = keyboard.inline_keyboard[0][0]
+          cancel_button = keyboard.inline_keyboard[1][1]
+          assert app.router
+          assert mode_button.icon_custom_emoji_id
+          assert mode_button.style == "primary"
+          assert cancel_button.style == "danger"
+          PY
