@@ -12,6 +12,7 @@ import os
 import random
 import re
 import shutil
+import sys
 import tempfile
 import time
 import uuid
@@ -37,7 +38,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
-from pydantic import Field, field_validator
+from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from session_shop.button_theme import ButtonTheme
 from session_shop.files import (
@@ -122,6 +123,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         env_ignore_empty=True,
+        case_sensitive=False,
+        env_prefix="",
         extra="ignore",
     )
 
@@ -192,7 +195,41 @@ class Settings(BaseSettings):
         return None
 
 
-settings = Settings()
+REQUIRED_ENV_VARS = ("API_ID", "API_HASH", "BOT_TOKEN", "ADMIN_IDS")
+
+
+def _env_state(name: str) -> str:
+    value = os.environ.get(name)
+    if value is None:
+        return "missing"
+    return "set" if value.strip() else "empty"
+
+
+def load_settings() -> Settings:
+    try:
+        return Settings()
+    except ValidationError:
+        service = os.environ.get("RAILWAY_SERVICE_NAME", "unknown")
+        environment = os.environ.get("RAILWAY_ENVIRONMENT_NAME", "unknown")
+        states = ", ".join(
+            f"{name}={_env_state(name)}" for name in REQUIRED_ENV_VARS
+        )
+        print(
+            "CONFIGURATION ERROR | "
+            f"Railway service={service}, environment={environment} | {states}",
+            file=sys.stderr,
+            flush=True,
+        )
+        print(
+            "Add non-empty variables to this exact Railway service and deploy "
+            "the staged changes.",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise SystemExit(78) from None
+
+
+settings = load_settings()
 
 logging.basicConfig(
     level=logging.INFO,
